@@ -77,6 +77,11 @@ extern PID pid_velocity[4];      // 速度PID控制器
 extern PID pid_location;
 extern PID pid_speed;
 
+extern int32_t pid_target;
+extern int32_t pid_total;
+extern int8_t tar[4];
+extern int8_t flag;
+
 #endif // PID_H
 
 int16_t shoot_pid(int16_t spgiven, int16_t spreal, int16_t rpm, int16_t goal);
@@ -90,6 +95,7 @@ void pid_angle_init(void);
 void pid_angle(void);
 int16_t pid_calculate_position(PID *pid, int32_t actual_val);
 int16_t pid_calculate_velocity(PID *pid, int16_t actual_rpm);
+void chassis_analyse(void);
 void set_pid_target(PID *pid, int16_t target_val);
 void pid_angle_update_position(int8_t motor_id);
 int8_t check_pid(void);

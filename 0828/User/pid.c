@@ -58,7 +58,7 @@ const int32_t I_threshold=114514;
 const int32_t D_threshold=114514;
 
 const int32_t I_threshold_position=10000;
-const int32_t I_threshold_velocity=4000;
+const int32_t I_threshold_velocity=3000;
 
 //const float Speeding_rate=10;
 //const int16_t Zero=100;
@@ -95,6 +95,10 @@ int32_t pos[4] = {0};
 int32_t target[4] = {0};        // 目标位置
 PID pid_position[4];            // 位置PID控制器
 PID pid_velocity[4];            // 速度PID控制器
+int32_t pid_target = 0 , pid_total = 0;
+int8_t tar[4] = {0};
+int16_t pid_turn = 0;
+int8_t flag = 0;
 
 // the first version
 int16_t shoot_pid(int16_t spgiven, int16_t spreal, int16_t rpm, int16_t goal){
@@ -254,19 +258,36 @@ void pid_angle_init(void)
         postn[i] = 0;
         ls_pos[i] = 0;
         target[i] = 0;
+        tar[i] = 0;
     }
+//    pid_velocity[3].Kp = 3.0f ;
+    pid_target = 0 ;
+    pid_total = 0 ;
+    pid_turn = 0 ;
+    flag = 0 ;
 }
 
 // 位置-速度串级PID控制
 void pid_angle(void)
 {
+	pid_total = 0 ;
+	pid_turn = 0 ;
     for(int8_t i = 0; i < 4; i++)
     {
         // 1. 更新位置信息
         pid_angle_update_position(i);
-        
+    }
+    if(flag == 1){
+        chassis_analyse();
+    }
+    for(int8_t i = 0; i < 4; i++)
+    {
         // 2. 位置环PID计算，输出目标速度(RPM)
         int16_t target_velocity = pid_calculate_position(&pid_position[i], pos[i]);
+
+        if(flag == 1){
+            target_velocity += pid_calculate_position(&pid_position[i], pid_target+pid_turn);
+        }
         
         // 3. 设置速度环目标值
         set_pid_target(&pid_velocity[i], target_velocity);
@@ -283,9 +304,6 @@ void pid_angle(void)
         // 6. 更新控制输出
         crt[i] = current_output;
     }
-    
-    // 7. 发送CAN控制命令
-//    CAN_cmd_chassis(crt[0], crt[1], crt[2], crt[3]);
 }
 
 // 位置环PID计算函数 - 输出RPM值
@@ -372,6 +390,8 @@ void pid_angle_update_position(int8_t motor_id)
     if(motor_id >= 0 && motor_id < 4)
     {
         get_angle(motor_id);
+
+        pid_total += pos[motor_id] * tar[motor_id];
     }
 }
 
@@ -383,10 +403,10 @@ int8_t check_pid(void){
 		if(pid_position[i].target_val - pos[i] < -50 ){
 			return 0 ;
 		}
-		if(motor_chassis[i].speed_rpm > 150){
+		if(motor_chassis[i].speed_rpm > 100){
 			return 0 ;
 		}
-		if(motor_chassis[i].speed_rpm < -150){
+		if(motor_chassis[i].speed_rpm < -100){
 			return 0 ;
 		}
 	}
@@ -415,10 +435,23 @@ void clean_pid(void){
         postn[i] = 0;
         ls_pos[i] = 0;
         target[i] = 0;
+        tar[i] = 0;
     }
+    pid_target = 0 ;
+    pid_total = 0 ;
+    pid_turn = 0 ;
+    flag = 0 ;
 }
 
-
+void chassis_analyse(void){
+    pid_total /= 4 ;
+    for(int8_t i = 0; i < 4; i++){
+    	pid_turn += pos[i] - tar[i]* pid_total ;
+    }
+    pid_turn /= 4 ;
+    pid_turn = (pid_turn < 100)? pid_turn : 100 ;
+    pid_turn = (pid_turn > -100)? pid_turn : -100 ;
+}
 
 //又实现了一遍直接pid，里面含有死区，
 

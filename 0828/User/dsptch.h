@@ -49,12 +49,11 @@ extern TaskSchdle Time;
 uint8_t check(void);
 void dispatch(void);
 void Init_schdl(void);
-void Bign_schdl(void);
 void watchdog_check(void);  // 看门狗检查函数
 void set_task(uint8_t slot, Taskpt func, const char* name, uint8_t stat); // 设置任务
 void clear_task(uint8_t slot); // 清除任务
 void _0STOP(void);
-void _0Stop(uint8_t i);	//???????
+void _0Stop(uint8_t i);	//清除指定时间片的任务
 void _1mssg(void);
 void _3pid(void);
 void _4fwd(void);
@@ -62,11 +61,20 @@ void _4rgt(void);
 void _4rnd(void);
 void _4stp(void);
 void _4(void);
+void _4upstr(void);
+void _4dwnstr(void);
+void _4for(int16_t distance);
 void _5get(void);
 void _5put(void);
+void _5nex1(void);
+void _5nex2(void);
 void _5rtn(void);
+void _5sty(void);
 void _5srvo(uint16_t angle1, uint16_t angle2, uint16_t angle3, uint16_t angle4);
+void _5move(uint16_t angle11, uint16_t angle21, uint16_t angle31, uint16_t angle41, uint16_t angle12, uint16_t angle22, uint16_t angle32, uint16_t angle42, uint16_t t);
 void _5othr(uint8_t state1, uint8_t state2);
 void _6shoot(void);
+uint8_t check_motor(uint8_t sign);
+void example_task_management(void);
 
 #endif // TASK_SCHEDULER_H
