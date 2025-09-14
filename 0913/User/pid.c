@@ -41,10 +41,7 @@
 static const float Kp_shoot = 0.7f;
 static const float Ki_shoot = 0.01f;
 static const float Kd_shoot = 0.1f;
-static const int16_t Dt = 1;
 
-static int32_t goal = 0;
-static int32_t last_goal = 0;
 static int32_t integral_right = 0;
 static int32_t integral_left = 0;
 static int16_t last_speed_right = 0;
@@ -73,14 +70,6 @@ static int32_t position_raw[MOTOR_COUNT] = {0};      // 原始位置计数
 static int32_t position_scaled[MOTOR_COUNT] = {0};   // 缩放后位置
 static int32_t last_position_raw[MOTOR_COUNT] = {0}; // 上次原始位置
 
-// PID控制器
-static PID pid_position[MOTOR_COUNT];
-static PID pid_velocity[MOTOR_COUNT];
-static PID pid_location[CHASSIS_MODE_COUNT];
-
-// 控制状态
-static int32_t pid_target = 0;
-static int32_t pid_total = 0;
 static int8_t control_mode = 0;  // 0:位置控制, 1:底盘分析模式
 static int8_t chassis_mode = 0;  // 底盘运动模式
 
@@ -122,18 +111,15 @@ int16_t crt[4] = {0};
 
 // 串级PID相关变量 (仅保留外部使用的)
 int32_t pos[4] = {0};                    // 用于调试输出
-int32_t target[4] = {0};                 // 目标位置
 PID pid_position[4];                     // 位置PID控制器
 PID pid_velocity[4];                     // 速度PID控制器
 PID pid_location[3];                     // 底盘PID控制器
-PID pid_speed;                           // 速度PID控制器
 
 int32_t pid_total_part[3] = {0};         // 底盘位置积分
 int32_t pid_veloc_part[3] = {0};         // 底盘速度输出
 int32_t pid_target = 0;                  // 底盘目标值
 int32_t pid_total = 0;                   // 总位置
 int8_t tar[4] = {0};                     // 电机方向
-int16_t pid_turn = 0;                    // 转向值
 int8_t flag = 0;                         // 控制模式标志
 int8_t chassis_stat = 0;                 // 底盘状态
 
@@ -452,7 +438,6 @@ void pid_angle_init(void)
         
         // 初始化外部接口变量
         pos[i] = 0;
-        target[i] = 0;
         tar[i] = 0;
     }
 
@@ -473,15 +458,6 @@ void pid_angle_init(void)
         pid_veloc_part[i] = 0;
     }
     
-    // 初始化速度PID
-    pid_speed.target_val = 0;
-    pid_speed.output_val = 0;
-    pid_speed.err = 0;
-    pid_speed.err_last = 0;
-    pid_speed.integral = 0;
-    pid_speed.Kp = 2.0f;
-    pid_speed.Ki = 0.1f;
-    pid_speed.Kd = 0.5f;
 
     // 初始化控制状态
     pid_target = 0;
@@ -489,7 +465,6 @@ void pid_angle_init(void)
     control_mode = 0;
     chassis_mode = 0;
     flag = 0;
-    pid_turn = 0;
     chassis_stat = 0;
 }
 
@@ -523,7 +498,6 @@ void pid_angle(void)
     
     // 更新外部接口变量
     pid_total = 0;
-    pid_turn = 0;
     flag = control_mode;
     chassis_stat = chassis_mode;
 }

@@ -66,18 +66,15 @@ extern int16_t crt[4];
 
 // 位置-速度串级PID相关变量 (仅保留外部使用的)
 extern int32_t pos[4];           // 当前位置 (用于调试输出)
-extern int32_t target[4];        // 目标位置
 extern PID pid_position[4];      // 位置PID控制器
 extern PID pid_velocity[4];      // 速度PID控制器
 extern PID pid_location[3];      // 底盘PID控制器
-extern PID pid_speed;            // 速度PID控制器
 
 extern int32_t pid_total_part[3]; // 底盘位置积分
 extern int32_t pid_veloc_part[3]; // 底盘速度输出
 extern int32_t pid_target;        // 底盘目标值
 extern int32_t pid_total;         // 总位置
 extern int8_t tar[4];             // 电机方向
-extern int16_t pid_turn;          // 转向值
 extern int8_t flag;               // 控制模式标志
 extern int8_t chassis_stat;       // 底盘状态
 
